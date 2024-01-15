@@ -2,42 +2,25 @@ package main
 
 import (
 	"fmt"
+	searchPokemon "pykadex-backend/apis/search"
+	uploadPokemon "pykadex-backend/apis/upload"
+	"strconv"
+
 	"log"
 	"net/http"
-	"time"
+
+	"github.com/gorilla/mux"
 )
 
 func main() {
-	m := http.NewServeMux()
+	r := mux.NewRouter()
 
-	const addr = ":8000"
+	r.HandleFunc("/pokemon-upload", uploadPokemon.PokemonUploadHandler).Methods(http.MethodPost)
+	r.HandleFunc("/pokemon-search/{id}", searchPokemon.PokemonSearchHandler).Methods(http.MethodGet)
 
-	m.HandleFunc("/", handleSearch)
+	port := 2000
+	portStr := strconv.Itoa(port)
 
-	srv := http.Server{
-		Handler: m,
-		Addr: addr,
-		WriteTimeout: 30 * time.Second,
-		ReadTimeout: 30 * time.Second,
-	}
-
-	fmt.Println("server started on port", addr)
-	err := srv.ListenAndServe()
-	log.Fatal(err)
-}
-
-func handleSearch(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/html")
-	w.Header().Set("Access-Control-Allow-Methods", "GET")
-
-	const page = `
-		<html>
-			<body>
-				<p>hello from go server</p>
-			</body>
-		</html>
-	`
-
-	w.WriteHeader(200)
-	w.Write([]byte(page))
+	fmt.Printf("server is running on 127.0.0.1:%v", port)
+	log.Fatal(http.ListenAndServe(":"+portStr, r))
 }
